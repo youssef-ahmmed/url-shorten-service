@@ -1,7 +1,8 @@
 package me.sideproject.urlshortener.controller;
 
-import me.sideproject.urlshortener.dto.URLRequest;
+import jakarta.validation.Valid;
 import me.sideproject.urlshortener.dto.URLOperationResponse;
+import me.sideproject.urlshortener.dto.URLRequest;
 import me.sideproject.urlshortener.dto.URLStatusResponse;
 import me.sideproject.urlshortener.service.URLService;
 import org.springframework.http.HttpHeaders;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -22,7 +22,7 @@ public class URLController {
   }
 
   @PostMapping("/shorten")
-  public ResponseEntity<URLOperationResponse> createURL(@RequestBody URLRequest request) {
+  public ResponseEntity<URLOperationResponse> createURL(@Valid @RequestBody URLRequest request) {
     URLOperationResponse response = urlService.shortenURL(request);
 
     return new ResponseEntity<>(response, HttpStatus.CREATED);
