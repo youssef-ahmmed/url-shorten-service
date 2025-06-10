@@ -1,20 +1,23 @@
 package me.sideproject.urlshortener.mapper;
 
-import me.sideproject.urlshortener.dto.URLMapDTO;
+import me.sideproject.urlshortener.dto.URLMapStats;
 import me.sideproject.urlshortener.models.URLMap;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Function;
 
 @Component
-public class URLMapper implements Function<URLMap, URLMapDTO> {
+public class URLStatsMapper implements Function<URLMap, URLMapStats> {
+
   @Override
-  public URLMapDTO apply(URLMap urlMap) {
-    return new URLMapDTO(
+  public URLMapStats apply(URLMap urlMap) {
+    return new URLMapStats(
+        urlMap.getId(),
         urlMap.getOriginalURL(),
         urlMap.getShortCode(),
         urlMap.getCreatedAt(),
-        urlMap.getUpdatedAt()
+        urlMap.getUpdatedAt(),
+        urlMap.getClickCount()
     );
   }
 }

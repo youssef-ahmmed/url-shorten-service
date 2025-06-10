@@ -1,10 +1,12 @@
 package me.sideproject.urlshortener.service;
 
 import jakarta.transaction.Transactional;
+import me.sideproject.urlshortener.dto.URLMapDTO;
+import me.sideproject.urlshortener.dto.URLMapStats;
 import me.sideproject.urlshortener.dto.URLRequest;
-import me.sideproject.urlshortener.dto.URLOperationResponse;
 import me.sideproject.urlshortener.exceptions.URLNotFound;
 import me.sideproject.urlshortener.mapper.URLMapper;
+import me.sideproject.urlshortener.mapper.URLStatsMapper;
 import me.sideproject.urlshortener.models.URLMap;
 import me.sideproject.urlshortener.repository.URLMapRepository;
 import me.sideproject.urlshortener.utils.Base62;
@@ -16,15 +18,22 @@ public class URLService {
   private final URLMapRepository urlMapRepository;
   private final Base62 base62;
   private final URLMapper urlMapper;
+  private final URLStatsMapper urlStatsMapper;
 
-  public URLService(URLMapRepository urlMapRepository, Base62 base62, URLMapper urlMapper) {
+  public URLService(
+      URLMapRepository urlMapRepository,
+      Base62 base62,
+      URLMapper urlMapper,
+      URLStatsMapper urlStatsMapper
+  ) {
     this.urlMapRepository = urlMapRepository;
     this.base62 = base62;
     this.urlMapper = urlMapper;
+    this.urlStatsMapper = urlStatsMapper;
   }
 
   @Transactional
-  public URLOperationResponse shortenURL(URLRequest request) {
+  public URLMapDTO shortenURL(URLRequest request) {
     String originalUrl = request.url();
     URLMap newUrl = URLMap
         .builder()
@@ -42,13 +51,16 @@ public class URLService {
     return urlMapper.apply(updatedURLMap);
   }
 
-  public URLOperationResponse getURL(String shortCode) {
-    return urlMapRepository.findByShortCode(shortCode)
+  public URLMapDTO getURL(String shortCode) {
+    URLMapDTO urlMap = urlMapRepository.findByShortCode(shortCode)
         .map(urlMapper)
         .orElseThrow(() -> new URLNotFound(shortCode));
+
+    urlMapRepository.incrementClickCount(shortCode);
+    return urlMap;
   }
 
-  public URLOperationResponse updateURL(String shortCode, URLRequest request) {
+  public URLMapDTO updateURL(String shortCode, URLRequest request) {
     URLMap urlMap = urlMapRepository.findByShortCode(shortCode)
         .orElseThrow(() -> new URLNotFound(shortCode));
 
@@ -65,5 +77,12 @@ public class URLService {
         .orElseThrow(() -> new URLNotFound(shortCode));
 
     urlMapRepository.delete(urlMap);
+  }
+
+  public URLMapStats getURLStats(String shortCode) {
+    URLMap urlMap = urlMapRepository.findByShortCode(shortCode)
+        .orElseThrow(() -> new URLNotFound(shortCode));
+
+    return urlStatsMapper.apply(urlMap);
   }
 }
