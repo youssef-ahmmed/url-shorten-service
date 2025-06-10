@@ -1,4 +1,4 @@
-package me.sideproject.urlshorten;
+package me.sideproject.urlshortener;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
