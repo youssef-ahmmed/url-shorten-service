@@ -1,9 +1,7 @@
 package me.sideproject.urlshortener.controller;
 
 import jakarta.validation.Valid;
-import me.sideproject.urlshortener.dto.URLOperationResponse;
-import me.sideproject.urlshortener.dto.URLRequest;
-import me.sideproject.urlshortener.dto.URLStatusResponse;
+import me.sideproject.urlshortener.dto.*;
 import me.sideproject.urlshortener.service.URLService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,21 +20,29 @@ public class URLController {
   }
 
   @PostMapping("/shorten")
-  public ResponseEntity<URLOperationResponse> createURL(@Valid @RequestBody URLRequest request) {
-    URLOperationResponse response = urlService.shortenURL(request);
+  public ResponseEntity<URLOperationResponse<URLMapDTO>> createURL(@Valid @RequestBody URLRequest request) {
+    URLMapDTO data = urlService.shortenURL(request);
 
-    return new ResponseEntity<>(response, HttpStatus.CREATED);
+    return ResponseEntity.ok(new URLOperationResponse<>(
+        true,
+        "URL shortened successfully",
+        data
+    ));
   }
 
   @GetMapping("/shorten/{shortCode}")
-  public ResponseEntity<URLOperationResponse> getURL(@PathVariable String shortCode) {
-    URLOperationResponse response = urlService.getURL(shortCode);
+  public ResponseEntity<URLOperationResponse<URLMapDTO>> getURL(@PathVariable String shortCode) {
+    URLMapDTO data = urlService.getURL(shortCode);
 
-    return new ResponseEntity<>(response, HttpStatus.OK);
+    return ResponseEntity.ok(new URLOperationResponse<>(
+        true,
+        "URL found successfully",
+        data
+    ));
   }
 
   @GetMapping("/{shortCode}")
-  public ResponseEntity<URLOperationResponse> redirectURL(@PathVariable String shortCode) {
+  public ResponseEntity<URLOperationResponse<URLMapDTO>> redirectURL(@PathVariable String shortCode) {
     String originalUrl = urlService.getURL(shortCode).url();
 
     HttpHeaders headers = new HttpHeaders();
@@ -46,13 +52,17 @@ public class URLController {
   }
 
   @PutMapping("/shorten/{shortCode}")
-  public ResponseEntity<URLOperationResponse> updateURL(
+  public ResponseEntity<URLOperationResponse<URLMapDTO>> updateURL(
       @PathVariable String shortCode,
       @RequestBody URLRequest request
   ) {
-    URLOperationResponse response = urlService.updateURL(shortCode, request);
+    URLMapDTO data = urlService.updateURL(shortCode, request);
 
-    return new ResponseEntity<>(response, HttpStatus.OK);
+    return ResponseEntity.ok(new URLOperationResponse<>(
+        true,
+        "URL updated successfully",
+        data
+    ));
   }
 
   @DeleteMapping("/shorten/{shortCode}")
@@ -62,6 +72,17 @@ public class URLController {
     return ResponseEntity.ok(new URLStatusResponse(
         true,
         "URL with short code '" + shortCode + "' deleted successfully"
+    ));
+  }
+
+  @GetMapping("/shorten/{shortCode}/stats")
+  public ResponseEntity<URLOperationResponse<URLMapStats>> getURLStats(@PathVariable String shortCode) {
+    URLMapStats data = urlService.getURLStats(shortCode);
+
+    return ResponseEntity.ok(new URLOperationResponse<>(
+        true,
+        "URL stats found successfully",
+        data
     ));
   }
 }
